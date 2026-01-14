@@ -56,7 +56,7 @@ def judge_with_llm(
         # Create agent with default settings (DeepSeek as per judge_agent.py)
         agent = JudgeAgent(
             target_project_path=str(target_path),
-            model_provider="deepseek",
+            model_provider="openai",
             ref="HEAD",
             debug_mode=False,
         )
