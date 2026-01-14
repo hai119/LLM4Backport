@@ -51,12 +51,22 @@ def process_cve_csv(input_csv_path: str, output_csv_path: str,
         print(f"Error initializing PrejudgeController: {e}")
         sys.exit(1)
 
-    # Read input CSV
-    results = []
+    # Read input CSV and process row by row
+    output_path = Path(output_csv_path)
+
+    # First, read the input to get fieldnames
     with open(input_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         fieldnames = reader.fieldnames + ['Prejudge_Result']
 
+        # Open output file and write header immediately
+        with open(output_path, 'w', encoding='utf-8', newline='') as out_f:
+            writer = csv.DictWriter(out_f, fieldnames=fieldnames)
+            writer.writeheader()
+            # Flush to ensure header is written
+            out_f.flush()
+
+        # Now process each row and append immediately
         for row in reader:
             cve_id = row['CVE-ID']
             commit_id = row['Mainline_Commit']
@@ -88,16 +98,16 @@ def process_cve_csv(input_csv_path: str, output_csv_path: str,
 
             # Add result to row
             row['Prejudge_Result'] = prejudge_result
-            results.append(row)
 
-    # Write output CSV
-    output_path = Path(output_csv_path)
-    with open(output_path, 'w', encoding='utf-8', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(results)
+            # Append to output file immediately
+            with open(output_path, 'a', encoding='utf-8', newline='') as out_f:
+                writer = csv.DictWriter(out_f, fieldnames=fieldnames)
+                writer.writerow(row)
+                out_f.flush()
 
-    print(f"\nResults written to: {output_csv_path}")
+            print(f"  Saved to {output_csv_path}")
+
+    print(f"\nAll results written to: {output_csv_path}")
 
 
 def main():
